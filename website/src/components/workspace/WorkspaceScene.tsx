@@ -15,14 +15,17 @@ function HotspotPill({
 }) {
   const content = (
     <motion.span
-      whileHover={{ scale: 1.05, y: -1 }}
+      whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.98 }}
-      className="glass-panel inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium text-[var(--text-primary)] shadow-[0_4px_20px_var(--shadow-soft)] transition hover:shadow-[0_6px_24px_var(--shadow-medium)] md:px-4 md:py-2 md:text-sm"
+      className="glass-panel inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium text-[var(--hotspot-text)] shadow-[0_4px_20px_var(--shadow-soft)] transition hover:shadow-[0_6px_24px_var(--shadow-medium)] md:px-4 md:py-2 md:text-sm"
     >
       {hotspot.label}
-      <span className="text-[var(--text-muted)]">+</span>
+      <span className="text-[var(--accent-dot)]">+</span>
     </motion.span>
   );
+
+  const pillClass =
+    "rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-glow)] focus-visible:ring-offset-2";
 
   if (hotspot.action) {
     return (
@@ -30,7 +33,7 @@ function HotspotPill({
         type="button"
         aria-label={hotspot.description}
         onClick={() => onAction(hotspot.action!)}
-        className="rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-glow)] focus-visible:ring-offset-2"
+        className={pillClass}
       >
         {content}
       </button>
@@ -38,13 +41,60 @@ function HotspotPill({
   }
 
   return (
-    <Link
-      href={hotspot.href!}
-      aria-label={hotspot.description}
-      className="rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-glow)] focus-visible:ring-offset-2"
-    >
+    <Link href={hotspot.href!} aria-label={hotspot.description} className={pillClass}>
       {content}
     </Link>
+  );
+}
+
+/**
+ * Anchor dot on the scene object + thin connector stem + label pill,
+ * mirroring the callout style of the inspo scenes.
+ */
+function Hotspot({
+  hotspot,
+  onAction,
+}: {
+  hotspot: WorkspaceHotspot;
+  onAction: (action: string) => void;
+}) {
+  const below = hotspot.labelBelow ?? false;
+
+  return (
+    <div
+      className="absolute z-20 hidden md:block"
+      style={{
+        left: `${hotspot.position.x}%`,
+        top: `${hotspot.position.y}%`,
+      }}
+    >
+      {/* Anchor dot on the object */}
+      <span
+        aria-hidden
+        className="absolute h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[var(--hotspot-bg)] shadow-[0_0_6px_var(--shadow-medium)] ring-1 ring-[var(--hotspot-stem)]"
+      />
+      {/* Connector stem */}
+      <span
+        aria-hidden
+        className="absolute w-px -translate-x-1/2 bg-[var(--hotspot-stem)]"
+        style={
+          below
+            ? { top: 4, height: hotspot.stem }
+            : { bottom: 4, height: hotspot.stem }
+        }
+      />
+      {/* Label pill */}
+      <div
+        className="absolute -translate-x-1/2"
+        style={
+          below
+            ? { top: hotspot.stem + 6 }
+            : { bottom: hotspot.stem + 6 }
+        }
+      >
+        <HotspotPill hotspot={hotspot} onAction={onAction} />
+      </div>
+    </div>
   );
 }
 
@@ -94,16 +144,7 @@ export function WorkspaceScene({
       />
 
       {hotspots.map((hotspot) => (
-        <div
-          key={hotspot.id}
-          className="absolute z-20 hidden -translate-x-1/2 -translate-y-1/2 md:block"
-          style={{
-            left: `${hotspot.position.x}%`,
-            top: `${hotspot.position.y}%`,
-          }}
-        >
-          <HotspotPill hotspot={hotspot} onAction={handleAction} />
-        </div>
+        <Hotspot key={hotspot.id} hotspot={hotspot} onAction={handleAction} />
       ))}
 
       {/* Orb glow aligned to the spherical lamp on the shelf */}

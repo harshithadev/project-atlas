@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Inter_Tight } from "next/font/google";
+import { Geist_Mono, Inter, Playfair_Display } from "next/font/google";
 import { AskProvider } from "@/components/providers/AskProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { AskPanel } from "@/components/ask/AskPanel";
@@ -12,9 +12,15 @@ const inter = Inter({
   display: "swap",
 });
 
-const interTight = Inter_Tight({
+const playfair = Playfair_Display({
   subsets: ["latin"],
-  variable: "--font-inter-tight",
+  variable: "--font-playfair",
+  display: "swap",
+});
+
+const geistMono = Geist_Mono({
+  subsets: ["latin"],
+  variable: "--font-geist-mono",
   display: "swap",
 });
 
@@ -37,7 +43,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} ${interTight.variable} antialiased`}>
+      <body className={`${inter.variable} ${playfair.variable} ${geistMono.variable} antialiased`}>
         <ThemeProvider>
           <AskProvider>
             {children}
