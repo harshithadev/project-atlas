@@ -67,7 +67,8 @@ export function ContentCard({
           {tags.map((tag) => (
             <span
               key={tag}
-              className="rounded-full bg-[var(--surface-soft)] px-2.5 py-0.5 text-xs text-[var(--text-muted)]"
+              className="rounded-full bg-[var(--surface-soft)] px-2.5 py-0.5 text-[11px] text-[var(--text-muted)]"
+              style={{ fontFamily: "var(--font-mono)" }}
             >
               {tag}
             </span>

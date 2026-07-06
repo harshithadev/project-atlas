@@ -29,7 +29,7 @@ Updated after wiring in `docs/my-context.md`, résumé, and portrait (Jul 6, 202
 ## Workspace scene
 
 - Backgrounds are **AI-generated clean scenes** (no baked-in UI) modeled on the inspo: `inspo/workspace-day-final.png` and `inspo/workspace-night-final.png`, copied into `website/public/images/`. Regenerate or replace with real photos anytime.
-- The framed portrait in the scene was regenerated using `assets/Portrait.jpeg` as reference — verify the likeness is acceptable; regenerate if not.
+- The framed portrait in the scene is your **actual `assets/Portrait.jpeg`**, composited pixel-perfectly into the frame (perspective-warped, night version darkened + warm-tinted to match lamp light). Compositing script approach documented in chat; re-run if scenes are ever regenerated.
 
 ## Content decisions to review
 

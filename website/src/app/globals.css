@@ -1,9 +1,12 @@
 @import "tailwindcss";
 
-@theme {
-  --font-display: var(--font-inter-tight), "Helvetica Neue", Helvetica, Arial, sans-serif;
+@theme inline {
+  --font-display: var(--font-playfair), "Georgia", serif;
   --font-sans: var(--font-inter), "Helvetica Neue", system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", monospace;
+}
 
+@theme {
   --color-paper: #faf7f0;
   --color-ivory: #fffdf8;
   --color-cream: #f3e9d7;
@@ -35,9 +38,15 @@
   --orb-glow: rgba(246, 201, 109, 0.45);
   --shadow-soft: rgba(40, 32, 22, 0.08);
   --shadow-medium: rgba(40, 32, 22, 0.16);
-  --hotspot-bg: rgba(255, 253, 248, 0.82);
+  --hotspot-bg: rgba(255, 253, 248, 0.85);
   --hotspot-border: rgba(216, 212, 204, 0.6);
+  --hotspot-text: #262019;
+  --hotspot-stem: rgba(110, 98, 82, 0.55);
   --scene-overlay: rgba(250, 247, 240, 0.08);
+  --accent-dot: #d9a441;
+  --dock-bg: rgba(255, 253, 248, 0.62);
+  --dock-border: rgba(216, 212, 204, 0.65);
+  --dock-active: rgba(255, 255, 255, 0.72);
 }
 
 [data-theme="night"] {
@@ -57,9 +66,16 @@
   --orb-glow: rgba(246, 201, 109, 0.55);
   --shadow-soft: rgba(0, 0, 0, 0.35);
   --shadow-medium: rgba(0, 0, 0, 0.55);
-  --hotspot-bg: rgba(33, 27, 22, 0.78);
-  --hotspot-border: rgba(107, 88, 68, 0.5);
+  /* Hotspot pills stay warm cream at night, matching the inspo */
+  --hotspot-bg: rgba(255, 249, 238, 0.88);
+  --hotspot-border: rgba(236, 222, 198, 0.65);
+  --hotspot-text: #262019;
+  --hotspot-stem: rgba(255, 243, 220, 0.65);
   --scene-overlay: rgba(23, 19, 15, 0.12);
+  --accent-dot: #f2b24e;
+  --dock-bg: rgba(38, 30, 24, 0.62);
+  --dock-border: rgba(150, 120, 88, 0.55);
+  --dock-active: rgba(255, 248, 234, 0.18);
 }
 
 @layer base {
@@ -73,6 +89,13 @@
   }
 
   body {
+    /* Font tokens must live on body: the next/font variables
+       (--font-playfair etc.) are class-scoped to <body>, so a :root-level
+       definition resolves them as invalid and silently breaks the fonts. */
+    --font-display: var(--font-playfair), "Georgia", serif;
+    --font-sans: var(--font-inter), "Helvetica Neue", system-ui, sans-serif;
+    --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", monospace;
+
     background: var(--background);
     color: var(--text-primary);
     font-family: var(--font-sans);
@@ -84,8 +107,8 @@
   h2,
   h3 {
     font-family: var(--font-display);
-    font-weight: 600;
-    letter-spacing: -0.03em;
+    font-weight: 500;
+    letter-spacing: -0.01em;
   }
 
   ::selection {
@@ -104,6 +127,20 @@
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border: 1px solid var(--hotspot-border);
+  }
+
+  .font-display {
+    font-family: var(--font-display);
+  }
+
+  .glass-dock {
+    background: var(--dock-bg);
+    backdrop-filter: blur(20px) saturate(1.2);
+    -webkit-backdrop-filter: blur(20px) saturate(1.2);
+    border: 1px solid var(--dock-border);
+    box-shadow:
+      0 10px 36px var(--shadow-soft),
+      inset 0 1px 0 rgba(255, 255, 255, 0.12);
   }
 
   .page-scroll {

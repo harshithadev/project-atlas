@@ -139,6 +139,10 @@ export type WorkspaceHotspot = {
   href?: string;
   action?: "toggle-theme" | "open-ask";
   description: string;
+  /** Anchor dot position (%) — sits directly on the object in the scene. */
   position: { x: number; y: number };
-  mobilePosition?: { x: number; y: number };
+  /** Connector stem length in px between the anchor dot and the pill. */
+  stem: number;
+  /** Whether the label pill hangs below the anchor dot (default: above). */
+  labelBelow?: boolean;
 };
