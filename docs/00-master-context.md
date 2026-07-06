@@ -330,7 +330,6 @@ This human dimension is essential. LinkedIn shows work. The website must show th
 The desk is a permanent anchor of the website.
 
 It should not be a small section.
-It should be a central metaphor.
 
 The desk represents:
 
@@ -384,6 +383,44 @@ Objects that do not belong:
 * excessive tech noise
 * anything that feels generic
 
+
+## 12.1 Homepage as Interactive Workspace
+
+The homepage should not initially behave like a conventional portfolio landing page.
+
+The homepage should feel like entering Harshitha’s thinking space: a cozy, elegant, light-filled desk beside a window, with a library shelf nearby.
+
+The visual inspiration is a warm study/workspace with:
+- natural daylight in day mode
+- warm lamp light in night mode
+- bookshelves
+- plants
+- a desk
+- open notebook
+- laptop
+- framed photo
+- framed achievements
+- pens
+- planner
+- lamp
+- window view
+- Ask Harshitha orb
+
+Each object should represent a meaningful area of the website.
+
+Object mappings:
+- framed photo on desk → About Harshitha
+- open notebook → Investigations / project stories
+- laptop → selected work or current experiments
+- bookshelf → Library, books, influences, and weekly notes
+- books on shelf → weekly notes, field notes, reflections
+- framed wall items → awards, certifications, degrees, proud moments
+- lamp or window → day/night toggle
+- glowing orb → Ask Harshitha AI
+- planner → goals, roadmap, current focus
+- bookmarks → project summaries or quick reads
+
+The homepage should make visitors feel as if they are invited into the room, not presented with a static résumé.
 ---
 
 ## 13. Library Concept
@@ -651,9 +688,8 @@ Primary visual direction:
 
 Dark mode:
 
-* optional later
-* not the default
-* user-toggleable eventually
+* should toggle to if the user time zone is 8pm - 3am
+* user-toggleable also available
 * should be refined, not hacker-like
 
 Color preferences:
@@ -1016,9 +1052,9 @@ Potential later additions:
 
 Version 1 should include:
 
-* polished light-theme homepage
+* polished light-theme homepage as per the inpiration
 * desk-centered landing experience
-* Ask Harshitha orb visual placeholder
+* Ask Harshitha orb visual placeholder with minimal RAG AI implementation
 * project/investigation section
 * library concept
 * about section
@@ -1029,7 +1065,7 @@ Version 1 should include:
 * accessible interactions
 * content architecture prepared for future AI
 
-Version 1 should not include:
+Later
 
 * full RAG AI implementation
 * recruiter mode upload
@@ -1058,23 +1094,6 @@ These should be answered later:
 * What is the first weekly note?
 * Which certifications should appear first?
 * What should the first recruiter mode prototype output look like?
-
----
-
-## 37. Immediate Next Documents
-
-This Master Context should be followed by:
-
-1. `01-product-vision-experience-blueprint.md`
-2. `02-design-system.md`
-3. `03-information-architecture.md`
-4. `04-ai-architecture.md`
-5. `05-content-model.md`
-6. `06-engineering-blueprint.md`
-7. `07-implementation-roadmap.md`
-8. `08-agents-instructions.md`
-
----
 
 ## 38. Final North Star
 
