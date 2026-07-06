@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="160" viewBox="0 0 120 160" fill="none">
+  <rect width="120" height="160" rx="4" fill="#E7D6BC"/>
+  <circle cx="60" cy="55" r="28" fill="#D8B98C"/>
+  <rect x="30" y="95" width="60" height="8" rx="4" fill="#A8B99A" opacity="0.6"/>
+  <rect x="35" y="110" width="50" height="6" rx="3" fill="#A8B99A" opacity="0.4"/>
+  <text x="60" y="145" text-anchor="middle" fill="#76716A" font-size="8" font-family="system-ui">Portrait</text>
+</svg>
