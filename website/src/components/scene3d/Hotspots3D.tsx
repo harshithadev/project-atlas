@@ -50,18 +50,15 @@ export function Hotspots3D({
                 type="button"
                 aria-label={hotspot.label}
                 onClick={() => onSelect(hotspot)}
-                className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-glow)]"
+                className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-full focus:outline-none"
               >
-                <span
-                  aria-hidden
-                  className="hotspot-dot h-3 w-3 rounded-full bg-[var(--hotspot-bg)] ring-1 ring-[var(--hotspot-stem)] transition-transform duration-200 group-hover:scale-150 group-focus-within:scale-150"
-                />
+                <span aria-hidden className="hotspot-dot" />
               </button>
               <span
                 role="tooltip"
                 style={{ transform: `translateX(${-50 + shift}%)` }}
-                className={`pointer-events-none absolute left-1/2 whitespace-nowrap rounded-full glass-panel px-3.5 py-1.5 text-xs font-medium text-[var(--hotspot-text)] opacity-0 shadow-[0_4px_20px_var(--shadow-soft)] transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100 md:text-sm ${
-                  below ? "top-full mt-1" : "bottom-full mb-1"
+                className={`glass-tooltip pointer-events-none absolute left-1/2 whitespace-nowrap rounded-full px-3.5 py-1.5 text-xs font-medium text-[var(--text-primary)] opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100 md:text-sm ${
+                  below ? "top-full mt-2" : "bottom-full mb-2"
                 }`}
               >
                 {hotspot.label}

@@ -15,8 +15,11 @@ export default function HomePage() {
         <WorkspaceExperience hotspots={workspaceHotspots} />
 
         {/* Hero copy overlay */}
+        {/* Outer + inner stay pointer-transparent so hotspot dots sitting
+            under the hero copy (e.g. the lamp/day-night dot) remain clickable;
+            only the link below re-enables pointer events. */}
         <div className="pointer-events-none absolute left-0 top-0 z-30 w-full p-5 pt-14 md:p-10 md:pt-16 lg:max-w-xl [@media(max-height:520px)]:pt-6">
-          <div className="pointer-events-auto space-y-5 [@media(max-height:520px)]:space-y-3">
+          <div className="space-y-5 [@media(max-height:520px)]:space-y-3">
             <h1
               className={`${playfair.className} text-4xl font-normal leading-[1.08] tracking-[-0.02em] text-[var(--text-primary)] sm:text-5xl md:text-6xl lg:text-[4.5rem] [@media(max-height:520px)]:text-3xl`}
             >
@@ -33,7 +36,7 @@ export default function HomePage() {
             </p>
             <Link
               href="/projects"
-              className="inline-flex items-center gap-2 text-sm font-medium text-[var(--text-primary)] underline decoration-[var(--accent-dot)] underline-offset-4 transition-all hover:gap-3"
+              className="pointer-events-auto inline-flex items-center gap-2 text-sm font-medium text-[var(--text-primary)] underline decoration-[var(--accent-dot)] underline-offset-4 transition-all hover:gap-3"
             >
               Explore My World <span aria-hidden>→</span>
             </Link>
@@ -41,7 +44,7 @@ export default function HomePage() {
         </div>
 
         {/* Quote anchored bottom-left — only when there is room for it */}
-        <blockquote className="show-tall pointer-events-auto absolute bottom-24 left-5 z-30 max-w-[17rem] md:bottom-24 md:left-10 lg:max-w-xs">
+        <blockquote className="show-tall pointer-events-none absolute bottom-24 left-5 z-30 max-w-[17rem] md:bottom-24 md:left-10 lg:max-w-xs">
           <span
             aria-hidden
             className={`${playfair.className} block -mb-1 text-[5.5rem] leading-none text-[var(--accent-dot)]`}

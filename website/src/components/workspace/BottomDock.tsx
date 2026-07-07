@@ -121,7 +121,7 @@ function PageDock({ pathname }: { pathname: string }) {
       orientation === "vertical" ? (
         <span
           role="tooltip"
-          className="pointer-events-none absolute left-full ml-3 whitespace-nowrap rounded-full glass-panel px-2.5 py-1 text-xs text-[var(--hotspot-text)] opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100"
+          className="pointer-events-none absolute left-full ml-3 whitespace-nowrap rounded-full glass-tooltip px-2.5 py-1 text-xs text-[var(--text-primary)] opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100"
         >
           {item.label}
         </span>

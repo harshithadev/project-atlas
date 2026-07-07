@@ -249,8 +249,8 @@ function Skyline({
         </group>
       ))}
       {/* sun by day, moon by night (material lerped in Room); kept low enough
-          to be visible through the window opening */}
-      <mesh position={[-1.15, 2.45, -4.0]} material={celestial}>
+          to be visible through the window opening (now centered at x=-0.1) */}
+      <mesh position={[-0.65, 2.45, -4.0]} material={celestial}>
         <sphereGeometry args={[0.16, 20, 20]} />
       </mesh>
     </group>
@@ -262,7 +262,7 @@ function Skyline({
 function Window() {
   const frame = "#e8dcc6";
   return (
-    <group position={[-0.6, 1.85, -1.79]}>
+    <group position={[-0.1, 1.85, -1.79]}>
       {/* Sky seen through the glass (theme-blended via material ref in Room) */}
       {/* frame strips */}
       <mesh position={[0, 0.93, 0]}>
@@ -734,20 +734,20 @@ export function Room({ blendRef }: { blendRef: MutableRefObject<number> }) {
         <meshStandardMaterial color="#ddc59c" roughness={1} />
       </mesh>
       {/* back wall built from four strips so the window is a real opening
-          with the skyline visible through it */}
-      <mesh position={[-3.08, 2.8, -1.8]}>
-        <planeGeometry args={[3.24, 5.8]} />
+          with the skyline visible through it (window centered at x=-0.1) */}
+      <mesh position={[-2.83, 2.8, -1.8]}>
+        <planeGeometry args={[3.74, 5.8]} />
         <meshStandardMaterial color="#f3ead9" roughness={0.95} />
       </mesh>
-      <mesh position={[2.28, 2.8, -1.8]}>
-        <planeGeometry args={[4.04, 5.8]} />
+      <mesh position={[2.53, 2.8, -1.8]}>
+        <planeGeometry args={[3.54, 5.8]} />
         <meshStandardMaterial color="#f3ead9" roughness={0.95} />
       </mesh>
-      <mesh position={[-0.6, 0.415, -1.8]}>
+      <mesh position={[-0.1, 0.415, -1.8]}>
         <planeGeometry args={[1.72, 1.03]} />
         <meshStandardMaterial color="#f3ead9" roughness={0.95} />
       </mesh>
-      <mesh position={[-0.6, 4.235, -1.8]}>
+      <mesh position={[-0.1, 4.235, -1.8]}>
         <planeGeometry args={[1.72, 2.93]} />
         <meshStandardMaterial color="#f3ead9" roughness={0.95} />
       </mesh>
@@ -769,7 +769,7 @@ export function Room({ blendRef }: { blendRef: MutableRefObject<number> }) {
         <primitive object={mats.sky} attach="material" />
       </mesh>
       {/* sheer curtains */}
-      <mesh position={[-1.55, 1.75, -1.72]} rotation={[0, 0.08, 0]}>
+      <mesh position={[-1.05, 1.75, -1.72]} rotation={[0, 0.08, 0]}>
         <planeGeometry args={[0.42, 2.1]} />
         <meshStandardMaterial
           color="#fffdf8"
@@ -778,7 +778,7 @@ export function Room({ blendRef }: { blendRef: MutableRefObject<number> }) {
           opacity={0.55}
         />
       </mesh>
-      <mesh position={[0.33, 1.75, -1.72]} rotation={[0, -0.08, 0]}>
+      <mesh position={[0.83, 1.75, -1.72]} rotation={[0, -0.08, 0]}>
         <planeGeometry args={[0.42, 2.1]} />
         <meshStandardMaterial
           color="#fffdf8"
