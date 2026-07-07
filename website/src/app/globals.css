@@ -168,7 +168,8 @@
   }
 
   /* Shown only when the viewport is tall enough for the decorative quote —
-     prevents it colliding with the hero copy in short windows. */
+     prevents it colliding with the hero copy in short/landscape windows.
+     Height-gated (not width) so portrait phones still get the quote. */
   .show-tall {
     display: none;
   }
@@ -214,7 +215,7 @@
   }
 }
 
-@media (min-width: 768px) and (min-height: 700px) {
+@media (min-height: 640px) {
   .show-tall {
     display: block;
   }

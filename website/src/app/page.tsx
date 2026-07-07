@@ -44,10 +44,10 @@ export default function HomePage() {
         </div>
 
         {/* Quote anchored bottom-left — only when there is room for it */}
-        <blockquote className="show-tall pointer-events-none absolute bottom-24 left-5 z-30 max-w-[17rem] md:bottom-24 md:left-10 lg:max-w-xs">
+        <blockquote className="show-tall pointer-events-none absolute bottom-28 left-5 z-30 max-w-[17rem] md:bottom-24 md:left-10 lg:max-w-xs">
           <span
             aria-hidden
-            className={`${playfair.className} block -mb-1 text-[5.5rem] leading-none text-[var(--accent-dot)]`}
+            className={`${playfair.className} block -mb-1 text-[4rem] leading-none text-[var(--accent-dot)] md:text-[5.5rem]`}
           >
             &ldquo;
           </span>
