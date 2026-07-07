@@ -158,6 +158,28 @@
   .show-tall {
     display: none;
   }
+
+  /* Hotspot anchor dots: soft breathing glow, stronger fixed glow on
+     hover/focus (the group also scales the dot itself). */
+  .hotspot-dot {
+    animation: hotspot-glow 3s ease-in-out infinite;
+  }
+
+  .group:hover .hotspot-dot,
+  .group:focus-within .hotspot-dot {
+    animation: none;
+    box-shadow: 0 0 16px 6px var(--orb-glow);
+  }
+}
+
+@keyframes hotspot-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 4px 1px var(--orb-glow);
+  }
+  50% {
+    box-shadow: 0 0 13px 5px var(--orb-glow);
+  }
 }
 
 @media (min-width: 768px) and (min-height: 700px) {

@@ -4,17 +4,17 @@ import { Html } from "@react-three/drei";
 import { useThree } from "@react-three/fiber";
 import type { WorkspaceHotspot } from "@/content/types";
 import {
-  hangBelow,
   hideOnNarrow,
   hotspotAnchors,
-  pillShift,
-  stemLength,
+  tooltipBelow,
+  tooltipShift,
 } from "@/content/workspace3d";
 
 /**
- * Label pills projected from 3D anchor points. The pill hangs above its
- * object with a stem + dot whose tip sits exactly on the anchor, so labels
- * track their objects at every viewport size and camera framing.
+ * Glowing anchor dots projected from 3D points on the scene objects. The
+ * label appears as a tooltip on hover/focus instead of a permanent pill, so
+ * the room stays uncluttered. The dot itself is the click target, wrapped in
+ * a 44px invisible hit area for touch.
  */
 export function Hotspots3D({
   hotspots,
@@ -35,63 +35,41 @@ export function Hotspots3D({
         const anchor = hotspotAnchors[hotspot.id];
         if (!anchor) return null;
         if (narrow && hideOnNarrow.has(hotspot.id)) return null;
-        const below = hangBelow.has(hotspot.id);
-        const shift = pillShift[hotspot.id];
-
-        const pill = (
-          <button
-            type="button"
-            aria-label={hotspot.label}
-            title={hotspot.description}
-            style={shift ? { transform: `translateX(${shift}%)` } : undefined}
-            onClick={() => onSelect(hotspot)}
-            className="glass-panel inline-flex min-h-[34px] cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-full px-3.5 py-1.5 text-xs font-medium text-[var(--hotspot-text)] shadow-[0_4px_20px_var(--shadow-soft)] transition-transform duration-200 hover:scale-105 hover:shadow-[0_6px_24px_var(--shadow-medium)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-glow)] pointer-coarse:min-h-[44px] pointer-coarse:px-4 md:text-sm"
-          >
-            {hotspot.label}
-            <span aria-hidden className="text-[var(--accent-dot)]">
-              +
-            </span>
-          </button>
-        );
-        const stem = (
-          <span
-            aria-hidden
-            className="w-px bg-[var(--hotspot-stem)]"
-            style={{ height: stemLength[hotspot.id] ?? 20 }}
-          />
-        );
-        const dot = (
-          <span
-            aria-hidden
-            className="h-2 w-2 rounded-full bg-[var(--hotspot-bg)] ring-1 ring-[var(--hotspot-stem)] shadow-[0_0_6px_var(--shadow-medium)]"
-          />
-        );
+        const below = tooltipBelow.has(hotspot.id);
+        const shift = tooltipShift[hotspot.id] ?? 0;
 
         return (
           <Html
             key={hotspot.id}
             position={anchor}
             zIndexRange={[20, 0]}
-            style={{
-              transform: below
-                ? "translate(-50%, 0)"
-                : "translate(-50%, -100%)",
-            }}
+            style={{ transform: "translate(-50%, -50%)" }}
           >
-            <div className="flex flex-col items-center">
-              {below ? (
-                <>
-                  {dot}
-                  {stem}
-                  {pill}
-                </>
-              ) : (
-                <>
-                  {pill}
-                  {stem}
-                  {dot}
-                </>
-              )}
+            <div className="group relative flex items-center justify-center">
+              <button
+                type="button"
+                aria-label={hotspot.label}
+                onClick={() => onSelect(hotspot)}
+                className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-glow)]"
+              >
+                <span
+                  aria-hidden
+                  className="hotspot-dot h-3 w-3 rounded-full bg-[var(--hotspot-bg)] ring-1 ring-[var(--hotspot-stem)] transition-transform duration-200 group-hover:scale-150 group-focus-within:scale-150"
+                />
+              </button>
+              <span
+                role="tooltip"
+                style={{ transform: `translateX(${-50 + shift}%)` }}
+                className={`pointer-events-none absolute left-1/2 whitespace-nowrap rounded-full glass-panel px-3.5 py-1.5 text-xs font-medium text-[var(--hotspot-text)] opacity-0 shadow-[0_4px_20px_var(--shadow-soft)] transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100 md:text-sm ${
+                  below ? "top-full mt-1" : "bottom-full mb-1"
+                }`}
+              >
+                {hotspot.label}
+                <span aria-hidden className="text-[var(--accent-dot)]">
+                  {" "}
+                  +
+                </span>
+              </span>
             </div>
           </Html>
         );

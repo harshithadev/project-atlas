@@ -28,6 +28,22 @@ function mulberry32(seed: number) {
 
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
+// Day/night endpoints for theme-lerped materials (hoisted; no per-frame allocs)
+const THEME_COLORS = {
+  skyDay: new Color("#cfe6f7"),
+  skyNight: new Color("#232c4a"),
+  skyEmDay: new Color("#bcd8f0"),
+  skyEmNight: new Color("#151b33"),
+  buildDay: new Color("#b4c3d4"),
+  buildNight: new Color("#252e44"),
+  buildAltDay: new Color("#a5b5c8"),
+  buildAltNight: new Color("#1e2637"),
+  celDay: new Color("#ffdf9e"),
+  celNight: new Color("#eef1f8"),
+  celEmDay: new Color("#ffd27a"),
+  celEmNight: new Color("#dfe7f5"),
+};
+
 const BOOK_COLORS = [
   "#a8b99a",
   "#c67b5c",
@@ -80,6 +96,10 @@ type ThemedMaterials = {
   orb: MeshStandardMaterial;
   flame: MeshStandardMaterial;
   stringBulb: MeshStandardMaterial;
+  building: MeshStandardMaterial;
+  buildingAlt: MeshStandardMaterial;
+  cityWindow: MeshStandardMaterial;
+  celestial: MeshStandardMaterial;
 };
 
 function useThemedMaterials(): ThemedMaterials {
@@ -121,8 +141,119 @@ function useThemedMaterials(): ThemedMaterials {
         emissive: new Color("#f6c96d"),
         emissiveIntensity: 0,
       }),
+      building: new MeshStandardMaterial({
+        color: "#b4c3d4",
+        roughness: 1,
+      }),
+      buildingAlt: new MeshStandardMaterial({
+        color: "#a5b5c8",
+        roughness: 1,
+      }),
+      cityWindow: new MeshStandardMaterial({
+        color: "#ffd98a",
+        roughness: 0.8,
+        emissive: new Color("#ffd98a"),
+        emissiveIntensity: 0,
+        transparent: true,
+        opacity: 0.25,
+      }),
+      celestial: new MeshStandardMaterial({
+        color: "#ffdf9e",
+        roughness: 0.6,
+        emissive: new Color("#ffd27a"),
+        emissiveIntensity: 1.3,
+      }),
     }),
     []
+  );
+}
+
+/** Low-poly NYC-ish skyline outside the window; lit windows fade in at night. */
+function Skyline({
+  building,
+  buildingAlt,
+  cityWindow,
+  celestial,
+}: {
+  building: MeshStandardMaterial;
+  buildingAlt: MeshStandardMaterial;
+  cityWindow: MeshStandardMaterial;
+  celestial: MeshStandardMaterial;
+}) {
+  const buildings = useMemo(() => {
+    const rand = mulberry32(41);
+    const list: {
+      x: number;
+      z: number;
+      w: number;
+      h: number;
+      alt: boolean;
+      spire: boolean;
+      lights: { dx: number; dy: number }[];
+    }[] = [];
+    let x = -3.4;
+    while (x < 2.2) {
+      const w = 0.35 + rand() * 0.4;
+      const h = 0.9 + rand() * 1.9;
+      const z = -2.6 - rand() * 1.1;
+      const lights: { dx: number; dy: number }[] = [];
+      const cols = Math.max(2, Math.round(w / 0.16));
+      const rows = Math.max(3, Math.round(h / 0.28));
+      for (let c = 0; c < cols; c++) {
+        for (let r = 0; r < rows; r++) {
+          if (rand() < 0.45) continue; // not every office is lit
+          lights.push({
+            dx: -w / 2 + (w / (cols + 1)) * (c + 1),
+            dy: -h / 2 + (h / (rows + 1)) * (r + 1),
+          });
+        }
+      }
+      list.push({
+        x: x + w / 2,
+        z,
+        w,
+        h,
+        alt: rand() < 0.5,
+        spire: h > 2.2 && rand() < 0.5,
+        lights,
+      });
+      x += w + 0.08 + rand() * 0.12;
+    }
+    return list;
+  }, []);
+
+  return (
+    <group>
+      {buildings.map((b, i) => (
+        <group key={i} position={[b.x, b.h / 2 - 0.1, b.z]}>
+          <mesh material={b.alt ? buildingAlt : building}>
+            <boxGeometry args={[b.w, b.h, 0.3]} />
+          </mesh>
+          {b.spire && (
+            <mesh
+              position={[0, b.h / 2 + 0.14, 0]}
+              material={b.alt ? buildingAlt : building}
+            >
+              <cylinderGeometry args={[0.012, 0.03, 0.3, 6]} />
+            </mesh>
+          )}
+          {b.lights.map((l, j) => (
+            <mesh
+              key={j}
+              position={[l.dx, l.dy, 0.152]}
+              material={cityWindow}
+            >
+              <planeGeometry args={[0.05, 0.07]} />
+            </mesh>
+          ))}
+        </group>
+      ))}
+      {/* sun by day, moon by night (material lerped in Room); kept low enough
+          to be visible through the window opening */}
+      <mesh position={[-1.15, 2.45, -4.0]} material={celestial}>
+        <sphereGeometry args={[0.16, 20, 20]} />
+      </mesh>
+    </group>
   );
 }
 
@@ -131,7 +262,7 @@ function useThemedMaterials(): ThemedMaterials {
 function Window() {
   const frame = "#e8dcc6";
   return (
-    <group position={[-1.55, 1.85, -1.79]}>
+    <group position={[-0.6, 1.85, -1.79]}>
       {/* Sky seen through the glass (theme-blended via material ref in Room) */}
       {/* frame strips */}
       <mesh position={[0, 0.93, 0]}>
@@ -191,19 +322,21 @@ function WallFrames() {
 }
 
 function Desk() {
+  // Pushed right so its end sits flush against the bookshelf, opening up the
+  // left of the frame for the hero copy, quote, and floor plant.
   return (
     <group>
       {/* top */}
-      <mesh position={[-0.35, 0.96, -1.35]}>
+      <mesh position={[0.55, 0.96, -1.35]}>
         <boxGeometry args={[3.1, 0.06, 0.78]} />
         <meshStandardMaterial color="#c9a06c" roughness={0.55} />
       </mesh>
       {/* side panels */}
-      <mesh position={[-1.85, 0.48, -1.35]}>
+      <mesh position={[-0.95, 0.48, -1.35]}>
         <boxGeometry args={[0.06, 0.9, 0.7]} />
         <meshStandardMaterial color="#b08d5f" roughness={0.65} />
       </mesh>
-      <mesh position={[1.15, 0.48, -1.35]}>
+      <mesh position={[2.05, 0.48, -1.35]}>
         <boxGeometry args={[0.06, 0.9, 0.7]} />
         <meshStandardMaterial color="#b08d5f" roughness={0.65} />
       </mesh>
@@ -213,7 +346,7 @@ function Desk() {
 
 function Lamp({ shade }: { shade: MeshStandardMaterial }) {
   return (
-    <group position={[-1.55, 0.99, -1.42]}>
+    <group position={[-0.65, 0.99, -1.42]}>
       <mesh position={[0, 0.02, 0]}>
         <cylinderGeometry args={[0.1, 0.12, 0.04, 20]} />
         <meshStandardMaterial color="#8a6a4a" roughness={0.5} />
@@ -231,7 +364,7 @@ function Lamp({ shade }: { shade: MeshStandardMaterial }) {
 
 function Portrait({ texture }: { texture: Texture }) {
   return (
-    <group position={[-0.55, 1.16, -1.48]} rotation={[-0.06, 0.28, 0]}>
+    <group position={[0.35, 1.16, -1.48]} rotation={[-0.06, 0.28, 0]}>
       <mesh>
         <boxGeometry args={[0.3, 0.37, 0.018]} />
         <meshStandardMaterial color="#a97f52" roughness={0.55} />
@@ -260,7 +393,7 @@ function PenBox() {
     }));
   }, []);
   return (
-    <group position={[-0.12, 0.99, -1.42]}>
+    <group position={[0.78, 0.99, -1.42]}>
       <mesh position={[0, 0.05, 0]}>
         <boxGeometry args={[0.22, 0.1, 0.14]} />
         <meshStandardMaterial color="#b08d5f" roughness={0.7} />
@@ -281,7 +414,7 @@ function PenBox() {
 
 function Candle({ flame }: { flame: MeshStandardMaterial }) {
   return (
-    <group position={[-1.15, 0.99, -1.1]}>
+    <group position={[-0.25, 0.99, -1.1]}>
       <mesh position={[0, 0.05, 0]}>
         <cylinderGeometry args={[0.05, 0.05, 0.1, 16]} />
         <meshStandardMaterial color="#f3ead9" roughness={0.4} />
@@ -295,7 +428,7 @@ function Candle({ flame }: { flame: MeshStandardMaterial }) {
 
 function Notebook() {
   return (
-    <group position={[0.18, 1.0, -1.02]} rotation={[0, -0.18, 0]}>
+    <group position={[1.08, 1.0, -1.02]} rotation={[0, -0.18, 0]}>
       <mesh position={[-0.075, 0, 0]} rotation={[0, 0, 0.055]}>
         <boxGeometry args={[0.15, 0.012, 0.21]} />
         <meshStandardMaterial color="#fffdf8" roughness={0.9} />
@@ -314,7 +447,7 @@ function Notebook() {
 
 function Laptop({ screen }: { screen: MeshStandardMaterial }) {
   return (
-    <group position={[0.78, 0.99, -1.32]} rotation={[0, -0.3, 0]}>
+    <group position={[1.62, 0.99, -1.32]} rotation={[0, -0.3, 0]}>
       {/* base */}
       <mesh position={[0, 0.01, 0]}>
         <boxGeometry args={[0.36, 0.016, 0.25]} />
@@ -496,7 +629,7 @@ function Vase() {
     }));
   }, []);
   return (
-    <group position={[-1.05, 0.99, -1.25]}>
+    <group position={[-0.15, 0.99, -1.25]}>
       <mesh position={[0, 0.11, 0]}>
         <cylinderGeometry args={[0.055, 0.075, 0.22, 16]} />
         <meshStandardMaterial
@@ -524,7 +657,7 @@ function Vase() {
 
 function FloorPlant() {
   return (
-    <group position={[-2.45, 0, -1.1]}>
+    <group position={[-2.15, 0, -0.7]} scale={1.15}>
       <mesh position={[0, 0.16, 0]}>
         <cylinderGeometry args={[0.17, 0.13, 0.32, 16]} />
         <meshStandardMaterial color="#b97350" roughness={0.8} />
@@ -564,9 +697,19 @@ export function Room({ blendRef }: { blendRef: MutableRefObject<number> }) {
     mats.flame.emissiveIntensity =
       lerp(0.15, 1.5, t) * (1 + Math.sin(clock.elapsedTime * 9) * 0.12 * t);
     mats.stringBulb.emissiveIntensity = lerp(0, 1.8, t);
-    mats.sky.color.set("#cfe6f7").lerp(new Color("#232c4a"), t);
-    mats.sky.emissive.set("#bcd8f0").lerp(new Color("#151b33"), t);
+    const c = THEME_COLORS;
+    mats.sky.color.lerpColors(c.skyDay, c.skyNight, t);
+    mats.sky.emissive.lerpColors(c.skyEmDay, c.skyEmNight, t);
     mats.sky.emissiveIntensity = lerp(0.7, 0.55, t);
+
+    // City outside the window: buildings darken, offices light up, sun→moon
+    mats.building.color.lerpColors(c.buildDay, c.buildNight, t);
+    mats.buildingAlt.color.lerpColors(c.buildAltDay, c.buildAltNight, t);
+    mats.cityWindow.emissiveIntensity = lerp(0, 1.6, t);
+    mats.cityWindow.opacity = lerp(0.25, 1, t);
+    mats.celestial.color.lerpColors(c.celDay, c.celNight, t);
+    mats.celestial.emissive.lerpColors(c.celEmDay, c.celEmNight, t);
+    mats.celestial.emissiveIntensity = lerp(1.3, 1.0, t);
 
     // Orb glow + soft pulse (stronger at night)
     const pulse = 1 + Math.sin(clock.elapsedTime * 1.8) * 0.035;
@@ -586,12 +729,26 @@ export function Room({ blendRef }: { blendRef: MutableRefObject<number> }) {
         <planeGeometry args={[14, 14]} />
         <meshStandardMaterial color="#d3ac74" roughness={0.85} />
       </mesh>
-      <mesh position={[0.1, 0.004, 0.3]} rotation={[-Math.PI / 2, 0, 0]}>
+      <mesh position={[0.8, 0.004, 0.45]} rotation={[-Math.PI / 2, 0, 0]}>
         <circleGeometry args={[1.1, 40]} />
         <meshStandardMaterial color="#ddc59c" roughness={1} />
       </mesh>
-      <mesh position={[-0.2, 2.8, -1.8]}>
-        <planeGeometry args={[9, 5.8]} />
+      {/* back wall built from four strips so the window is a real opening
+          with the skyline visible through it */}
+      <mesh position={[-3.08, 2.8, -1.8]}>
+        <planeGeometry args={[3.24, 5.8]} />
+        <meshStandardMaterial color="#f3ead9" roughness={0.95} />
+      </mesh>
+      <mesh position={[2.28, 2.8, -1.8]}>
+        <planeGeometry args={[4.04, 5.8]} />
+        <meshStandardMaterial color="#f3ead9" roughness={0.95} />
+      </mesh>
+      <mesh position={[-0.6, 0.415, -1.8]}>
+        <planeGeometry args={[1.72, 1.03]} />
+        <meshStandardMaterial color="#f3ead9" roughness={0.95} />
+      </mesh>
+      <mesh position={[-0.6, 4.235, -1.8]}>
+        <planeGeometry args={[1.72, 2.93]} />
         <meshStandardMaterial color="#f3ead9" roughness={0.95} />
       </mesh>
       <mesh position={[2.53, 2.8, 1.2]} rotation={[0, -Math.PI / 2, 0]}>
@@ -599,14 +756,20 @@ export function Room({ blendRef }: { blendRef: MutableRefObject<number> }) {
         <meshStandardMaterial color="#efe4d0" roughness={0.95} />
       </mesh>
 
-      {/* window + sky */}
+      {/* window, skyline outside, and far sky backdrop */}
       <Window />
-      <mesh position={[-1.55, 1.85, -1.815]}>
-        <planeGeometry args={[1.72, 1.84]} />
+      <Skyline
+        building={mats.building}
+        buildingAlt={mats.buildingAlt}
+        cityWindow={mats.cityWindow}
+        celestial={mats.celestial}
+      />
+      <mesh position={[-0.6, 2.1, -4.5]}>
+        <planeGeometry args={[12, 6]} />
         <primitive object={mats.sky} attach="material" />
       </mesh>
       {/* sheer curtains */}
-      <mesh position={[-2.5, 1.75, -1.72]} rotation={[0, 0.08, 0]}>
+      <mesh position={[-1.55, 1.75, -1.72]} rotation={[0, 0.08, 0]}>
         <planeGeometry args={[0.42, 2.1]} />
         <meshStandardMaterial
           color="#fffdf8"
@@ -615,7 +778,7 @@ export function Room({ blendRef }: { blendRef: MutableRefObject<number> }) {
           opacity={0.55}
         />
       </mesh>
-      <mesh position={[-0.62, 1.75, -1.72]} rotation={[0, -0.08, 0]}>
+      <mesh position={[0.33, 1.75, -1.72]} rotation={[0, -0.08, 0]}>
         <planeGeometry args={[0.42, 2.1]} />
         <meshStandardMaterial
           color="#fffdf8"
@@ -633,7 +796,7 @@ export function Room({ blendRef }: { blendRef: MutableRefObject<number> }) {
       <Candle flame={mats.flame} />
       <Notebook />
       {/* small stack of books between notebook and laptop */}
-      <group position={[0.42, 0.99, -1.5]} rotation={[0, 0.15, 0]}>
+      <group position={[1.32, 0.99, -1.5]} rotation={[0, 0.15, 0]}>
         <mesh position={[0, 0.02, 0]}>
           <boxGeometry args={[0.24, 0.04, 0.17]} />
           <meshStandardMaterial color="#5c6b8a" roughness={0.8} />
@@ -656,7 +819,7 @@ export function Room({ blendRef }: { blendRef: MutableRefObject<number> }) {
       {/* warm practical lights (ramp up at night) */}
       <pointLight
         ref={lampLightRef}
-        position={[-1.55, 1.6, -1.35]}
+        position={[-0.65, 1.6, -1.35]}
         color="#f6c96d"
         distance={4}
         decay={1.8}

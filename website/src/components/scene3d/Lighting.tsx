@@ -69,8 +69,8 @@ export function Lighting({ blendRef }: { blendRef: MutableRefObject<number> }) {
   return (
     <>
       <hemisphereLight ref={hemiRef} />
-      {/* Sun angled in through the window on the left wall */}
-      <directionalLight ref={sunRef} position={[-4, 4.2, 1.6]} />
+      {/* Sun angled in through the window (now near back-wall center) */}
+      <directionalLight ref={sunRef} position={[-2.4, 4.2, 1.6]} />
       <ambientLight ref={ambientRef} />
     </>
   );
