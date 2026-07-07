@@ -47,6 +47,8 @@
   --dock-bg: rgba(255, 253, 248, 0.62);
   --dock-border: rgba(216, 212, 204, 0.65);
   --dock-active: rgba(255, 255, 255, 0.72);
+  --scene-fade-strong: rgba(250, 247, 240, 0.85);
+  --scene-fade-soft: rgba(250, 247, 240, 0.4);
 }
 
 [data-theme="night"] {
@@ -76,6 +78,8 @@
   --dock-bg: rgba(38, 30, 24, 0.62);
   --dock-border: rgba(150, 120, 88, 0.55);
   --dock-active: rgba(255, 248, 234, 0.18);
+  --scene-fade-strong: rgba(23, 19, 15, 0.82);
+  --scene-fade-soft: rgba(23, 19, 15, 0.38);
 }
 
 @layer base {
@@ -147,6 +151,18 @@
     overflow-y: auto;
     height: 100vh;
     height: 100dvh;
+  }
+
+  /* Shown only when the viewport is tall enough for the decorative quote —
+     prevents it colliding with the hero copy in short windows. */
+  .show-tall {
+    display: none;
+  }
+}
+
+@media (min-width: 768px) and (min-height: 700px) {
+  .show-tall {
+    display: block;
   }
 }
 

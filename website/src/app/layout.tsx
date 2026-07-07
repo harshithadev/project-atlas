@@ -4,7 +4,12 @@ import { AskProvider } from "@/components/providers/AskProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { AskPanel } from "@/components/ask/AskPanel";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
+import { BottomDock } from "@/components/workspace/BottomDock";
 import "./globals.css";
+
+// Applied before first paint so returning night-mode visitors don't see a
+// flash of the day theme.
+const themeInitScript = `try{if(localStorage.getItem("atlas-theme")==="night")document.documentElement.dataset.theme="night"}catch(e){}`;
 
 const inter = Inter({
   subsets: ["latin"],
@@ -43,10 +48,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body className={`${inter.variable} ${playfair.variable} ${geistMono.variable} antialiased`}>
         <ThemeProvider>
           <AskProvider>
             {children}
+            <BottomDock />
             <ThemeToggle />
             <AskPanel />
           </AskProvider>
