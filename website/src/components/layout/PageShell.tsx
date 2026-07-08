@@ -10,7 +10,7 @@ export function PageShell({
   subtitle?: string;
 }) {
   return (
-    <div className="page-scroll min-h-[100dvh] bg-[var(--background)]">
+    <div className="page-scroll min-h-[100dvh] bg-[var(--background)] md:pl-16">
       <main className="mx-auto max-w-3xl px-5 pb-36 pt-16 md:px-8 md:pt-20">
         <Link
           href="/"

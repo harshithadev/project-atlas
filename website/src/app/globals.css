@@ -42,11 +42,16 @@
   --hotspot-border: rgba(216, 212, 204, 0.6);
   --hotspot-text: #262019;
   --hotspot-stem: rgba(110, 98, 82, 0.55);
+  /* Transparent frosted glass for hotspot/nav tooltips */
+  --tooltip-bg: rgba(255, 253, 248, 0.38);
+  --tooltip-border: rgba(255, 255, 255, 0.55);
   --scene-overlay: rgba(250, 247, 240, 0.08);
   --accent-dot: #d9a441;
   --dock-bg: rgba(255, 253, 248, 0.62);
   --dock-border: rgba(216, 212, 204, 0.65);
   --dock-active: rgba(255, 255, 255, 0.72);
+  --scene-fade-strong: rgba(250, 247, 240, 0.85);
+  --scene-fade-soft: rgba(250, 247, 240, 0.4);
 }
 
 [data-theme="night"] {
@@ -76,6 +81,10 @@
   --dock-bg: rgba(38, 30, 24, 0.62);
   --dock-border: rgba(150, 120, 88, 0.55);
   --dock-active: rgba(255, 248, 234, 0.18);
+  --scene-fade-strong: rgba(23, 19, 15, 0.82);
+  --scene-fade-soft: rgba(23, 19, 15, 0.38);
+  --tooltip-bg: rgba(30, 24, 18, 0.42);
+  --tooltip-border: rgba(255, 243, 220, 0.2);
 }
 
 @layer base {
@@ -129,6 +138,15 @@
     border: 1px solid var(--hotspot-border);
   }
 
+  /* Transparent frosted glass for hotspot labels + nav tooltips */
+  .glass-tooltip {
+    background: var(--tooltip-bg);
+    backdrop-filter: blur(16px) saturate(1.15);
+    -webkit-backdrop-filter: blur(16px) saturate(1.15);
+    border: 1px solid var(--tooltip-border);
+    box-shadow: 0 6px 22px var(--shadow-soft);
+  }
+
   .font-display {
     font-family: var(--font-display);
   }
@@ -147,6 +165,59 @@
     overflow-y: auto;
     height: 100vh;
     height: 100dvh;
+  }
+
+  /* Shown only when the viewport is tall enough for the decorative quote —
+     prevents it colliding with the hero copy in short/landscape windows.
+     Height-gated (not width) so portrait phones still get the quote. */
+  .show-tall {
+    display: none;
+  }
+
+  /* Hotspot anchor dots: subtle warm points of light that breathe gently and
+     brighten + enlarge on hover/focus, revealing the label tooltip. */
+  .hotspot-dot {
+    height: 9px;
+    width: 9px;
+    border-radius: 9999px;
+    background: radial-gradient(
+      circle,
+      var(--orb-core) 0%,
+      var(--accent-dot) 75%
+    );
+    opacity: 0.62;
+    box-shadow: 0 0 5px 1px var(--orb-glow);
+    animation: hotspot-glow 3.6s ease-in-out infinite;
+    transition:
+      opacity 0.25s ease,
+      transform 0.25s ease,
+      box-shadow 0.25s ease;
+  }
+
+  .group:hover .hotspot-dot,
+  .group:focus-within .hotspot-dot {
+    animation: none;
+    opacity: 1;
+    transform: scale(1.4);
+    box-shadow: 0 0 15px 5px var(--orb-glow);
+  }
+}
+
+@keyframes hotspot-glow {
+  0%,
+  100% {
+    opacity: 0.52;
+    box-shadow: 0 0 4px 1px var(--orb-glow);
+  }
+  50% {
+    opacity: 0.82;
+    box-shadow: 0 0 10px 3px var(--orb-glow);
+  }
+}
+
+@media (min-height: 640px) {
+  .show-tall {
+    display: block;
   }
 }
 

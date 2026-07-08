@@ -31,7 +31,8 @@ function HotspotPill({
     return (
       <button
         type="button"
-        aria-label={hotspot.description}
+        aria-label={hotspot.label}
+        title={hotspot.description}
         onClick={() => onAction(hotspot.action!)}
         className={pillClass}
       >
@@ -41,7 +42,12 @@ function HotspotPill({
   }
 
   return (
-    <Link href={hotspot.href!} aria-label={hotspot.description} className={pillClass}>
+    <Link
+      href={hotspot.href!}
+      aria-label={hotspot.label}
+      title={hotspot.description}
+      className={pillClass}
+    >
       {content}
     </Link>
   );

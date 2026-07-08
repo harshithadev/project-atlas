@@ -10,7 +10,9 @@ export default function AboutPage() {
       subtitle={profile.coreBrandSentence}
     >
       <Section title="Who I am">
-        <p>{profile.longBio}</p>
+        {profile.longBio.split("\n\n").map((paragraph, i) => (
+          <p key={i}>{paragraph}</p>
+        ))}
       </Section>
 
       <Section title="What I believe">

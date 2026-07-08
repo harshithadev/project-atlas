@@ -14,7 +14,10 @@ export default function ProjectsPage() {
             href={`/projects/${project.slug}`}
             title={project.question}
             summary={project.summary}
-            tags={[...project.capabilities, project.status === "draft" ? "In Progress" : ""]}
+            tags={[
+              ...project.capabilities,
+              ...(project.status === "draft" ? ["In Progress"] : []),
+            ]}
           />
         ))}
       </div>
