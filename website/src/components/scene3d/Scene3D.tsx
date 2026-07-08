@@ -1,9 +1,23 @@
 "use client";
 
-import { Suspense, useEffect, useRef, type MutableRefObject } from "react";
+import {
+  Suspense,
+  useEffect,
+  useMemo,
+  useRef,
+  type MutableRefObject,
+} from "react";
 import { useRouter } from "next/navigation";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { ContactShadows } from "@react-three/drei";
+import { Environment, Lightformer } from "@react-three/drei";
+import {
+  Bloom,
+  EffectComposer,
+  N8AO,
+  ToneMapping,
+  Vignette,
+} from "@react-three/postprocessing";
+import { ToneMappingMode } from "postprocessing";
 import { Vector3 } from "three";
 import { damp } from "maath/easing";
 import { useAsk } from "@/components/providers/AskProvider";
@@ -31,6 +45,37 @@ function ThemeDriver({
   return null;
 }
 
+/** Cinematic post stack; AO is skipped on low-power devices. */
+function Effects({ highQuality }: { highQuality: boolean }) {
+  if (!highQuality) {
+    return (
+      <EffectComposer multisampling={2}>
+        <Bloom
+          mipmapBlur
+          intensity={0.6}
+          luminanceThreshold={0.85}
+          luminanceSmoothing={0.2}
+        />
+        <Vignette offset={0.22} darkness={0.32} />
+        <ToneMapping mode={ToneMappingMode.ACES_FILMIC} />
+      </EffectComposer>
+    );
+  }
+  return (
+    <EffectComposer multisampling={4}>
+      <N8AO aoRadius={0.45} intensity={2.2} distanceFalloff={0.8} />
+      <Bloom
+        mipmapBlur
+        intensity={0.6}
+        luminanceThreshold={0.85}
+        luminanceSmoothing={0.2}
+      />
+      <Vignette offset={0.22} darkness={0.32} />
+      <ToneMapping mode={ToneMappingMode.ACES_FILMIC} />
+    </EffectComposer>
+  );
+}
+
 export default function Scene3D({
   hotspots,
 }: {
@@ -43,6 +88,15 @@ export default function Scene3D({
   const flyRef = useRef<FlyState>({ target: null });
   const blendRef = useRef(0);
   const navTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Touch devices and low-memory machines skip AO/MSAA and use smaller DPR.
+  const highQuality = useMemo(() => {
+    if (typeof window === "undefined") return true;
+    const coarse = window.matchMedia("(pointer: coarse)").matches;
+    const memory =
+      (navigator as unknown as { deviceMemory?: number }).deviceMemory ?? 8;
+    return !coarse && memory > 4;
+  }, []);
 
   useEffect(() => {
     // Match the pre-hydration theme immediately so night visitors don't see
@@ -72,30 +126,49 @@ export default function Scene3D({
 
   return (
     <div className="absolute inset-0">
+      {/* Variance shadow maps give soft, blurred sun shadows; drei's PCSS
+          (SoftShadows) breaks shader compilation on three r185+ */}
       <Canvas
-        dpr={[1, 1.75]}
+        shadows="variance"
+        dpr={[1, highQuality ? 1.75 : 1.5]}
         camera={{ fov: 43, position: [-0.5, 1.58, 3.6], near: 0.1, far: 30 }}
-        gl={{ antialias: true, powerPreference: "high-performance" }}
+        gl={{ antialias: false, powerPreference: "high-performance" }}
       >
         <ThemeDriver blendRef={blendRef} night={theme === "night"} />
         <Lighting blendRef={blendRef} />
+        {/* Procedural environment for soft reflections — no HDRI download.
+            Intensity is lerped day/night in Lighting. */}
+        <Environment resolution={64} frames={1}>
+          <Lightformer
+            intensity={1.1}
+            position={[-1, 2.2, -4]}
+            scale={[3.5, 2.2, 1]}
+            color="#fff4dd"
+          />
+          <Lightformer
+            intensity={0.5}
+            position={[2, 1.6, 3]}
+            rotation-y={Math.PI}
+            scale={[4, 3, 1]}
+            color="#ffe6c0"
+          />
+          <Lightformer
+            intensity={0.4}
+            position={[0, 4, 0]}
+            rotation-x={Math.PI / 2}
+            scale={[6, 6, 1]}
+            color="#fdf3e0"
+          />
+        </Environment>
         <Suspense fallback={null}>
           <Room blendRef={blendRef} />
         </Suspense>
-        <ContactShadows
-          position={[0, 0.002, 0]}
-          opacity={0.32}
-          scale={9}
-          blur={2.6}
-          far={3}
-          resolution={512}
-          frames={1}
-        />
         <CameraRig flyRef={flyRef} />
+        <Effects highQuality={highQuality} />
         <Hotspots3D hotspots={hotspots} onSelect={handleSelect} />
       </Canvas>
       {/* Readability gradient behind the hero copy (above canvas, below the
-          hotspot pills which use z-index 20 within this stacking context) */}
+          hotspot dots which use z-index 20 within this stacking context) */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-y-0 left-0 z-10 w-full md:w-3/5"

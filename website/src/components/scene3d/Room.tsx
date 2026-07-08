@@ -1,16 +1,19 @@
 "use client";
 
-import { useMemo, useRef, type MutableRefObject } from "react";
+import { useEffect, useMemo, useRef, type MutableRefObject } from "react";
 import { useFrame } from "@react-three/fiber";
-import { useTexture } from "@react-three/drei";
+import { RoundedBox, useTexture } from "@react-three/drei";
 import {
   Color,
+  Group,
   Mesh,
   MeshStandardMaterial,
+  PlaneGeometry,
   PointLight,
   SRGBColorSpace,
   Texture,
 } from "three";
+import { sharedMaterials } from "./materials";
 
 /* ---------------------------------------------------------------- helpers */
 
@@ -324,22 +327,32 @@ function WallFrames() {
 function Desk() {
   // Pushed right so its end sits flush against the bookshelf, opening up the
   // left of the frame for the hero copy, quote, and floor plant.
+  const M = sharedMaterials();
   return (
     <group>
       {/* top */}
-      <mesh position={[0.55, 0.96, -1.35]}>
-        <boxGeometry args={[3.1, 0.06, 0.78]} />
-        <meshStandardMaterial color="#c9a06c" roughness={0.55} />
-      </mesh>
+      <RoundedBox
+        args={[3.1, 0.06, 0.78]}
+        radius={0.015}
+        smoothness={3}
+        position={[0.55, 0.96, -1.35]}
+        material={M.wood}
+      />
       {/* side panels */}
-      <mesh position={[-0.95, 0.48, -1.35]}>
-        <boxGeometry args={[0.06, 0.9, 0.7]} />
-        <meshStandardMaterial color="#b08d5f" roughness={0.65} />
-      </mesh>
-      <mesh position={[2.05, 0.48, -1.35]}>
-        <boxGeometry args={[0.06, 0.9, 0.7]} />
-        <meshStandardMaterial color="#b08d5f" roughness={0.65} />
-      </mesh>
+      <RoundedBox
+        args={[0.06, 0.9, 0.7]}
+        radius={0.012}
+        smoothness={3}
+        position={[-0.95, 0.48, -1.35]}
+        material={M.woodDark}
+      />
+      <RoundedBox
+        args={[0.06, 0.9, 0.7]}
+        radius={0.012}
+        smoothness={3}
+        position={[2.05, 0.48, -1.35]}
+        material={M.woodDark}
+      />
     </group>
   );
 }
@@ -511,25 +524,38 @@ function Bookshelf({
   return (
     <group position={[2.35, 0, -0.3]}>
       {/* side panels */}
-      <mesh position={[0, 1.38, -1.42]}>
-        <boxGeometry args={[0.34, 2.72, 0.05]} />
-        <meshStandardMaterial color="#b08d5f" roughness={0.6} />
-      </mesh>
-      <mesh position={[0, 1.38, 1.12]}>
-        <boxGeometry args={[0.34, 2.72, 0.05]} />
-        <meshStandardMaterial color="#b08d5f" roughness={0.6} />
-      </mesh>
+      <RoundedBox
+        args={[0.34, 2.72, 0.05]}
+        radius={0.01}
+        smoothness={3}
+        position={[0, 1.38, -1.42]}
+        material={sharedMaterials().woodDark}
+      />
+      <RoundedBox
+        args={[0.34, 2.72, 0.05]}
+        radius={0.01}
+        smoothness={3}
+        position={[0, 1.38, 1.12]}
+        material={sharedMaterials().woodDark}
+      />
       {/* back panel against the wall */}
-      <mesh position={[0.16, 1.38, -0.15]} rotation={[0, -Math.PI / 2, 0]}>
+      <mesh
+        position={[0.16, 1.38, -0.15]}
+        rotation={[0, -Math.PI / 2, 0]}
+        material={sharedMaterials().shelfBack}
+      >
         <planeGeometry args={[2.56, 2.72]} />
-        <meshStandardMaterial color="#c19a68" roughness={0.85} />
       </mesh>
       {/* boards */}
       {boards.map((y) => (
-        <mesh key={y} position={[0, y, -0.15]}>
-          <boxGeometry args={[0.32, 0.045, 2.5]} />
-          <meshStandardMaterial color="#c9a06c" roughness={0.6} />
-        </mesh>
+        <RoundedBox
+          key={y}
+          args={[0.32, 0.045, 2.5]}
+          radius={0.008}
+          smoothness={3}
+          position={[0, y, -0.15]}
+          material={sharedMaterials().wood}
+        />
       ))}
       {/* books */}
       {rows.map((row, r) =>
@@ -575,15 +601,17 @@ function Bookshelf({
         </mesh>
       </group>
       {/* string lights draped along the front edge (visible at night) */}
-      {bulbs.map((z, i) => (
-        <mesh
-          key={i}
-          position={[-0.18, 2.56 + Math.sin(i * 1.7) * 0.05, z]}
-          material={stringBulb}
-        >
-          <sphereGeometry args={[0.014, 8, 8]} />
-        </mesh>
-      ))}
+      <group userData={{ noShadow: true }}>
+        {bulbs.map((z, i) => (
+          <mesh
+            key={i}
+            position={[-0.18, 2.56 + Math.sin(i * 1.7) * 0.05, z]}
+            material={stringBulb}
+          >
+            <sphereGeometry args={[0.014, 8, 8]} />
+          </mesh>
+        ))}
+      </group>
     </group>
   );
 }
@@ -591,19 +619,13 @@ function Bookshelf({
 function Chair() {
   return (
     <group position={[2.1, 0, 1.15]} rotation={[0, -0.9, 0]} scale={0.75}>
-      <mesh position={[0, 0.44, 0]}>
+      <mesh position={[0, 0.44, 0]} material={sharedMaterials().chairFabric}>
         <cylinderGeometry args={[0.3, 0.27, 0.15, 24]} />
-        <meshStandardMaterial color="#e9dcc3" roughness={0.95} />
       </mesh>
       {/* wraparound backrest, opening faces the desk */}
-      <mesh position={[0, 0.7, 0]}>
+      <mesh position={[0, 0.7, 0]} material={sharedMaterials().chairFabric}>
         <cylinderGeometry
           args={[0.32, 0.32, 0.44, 24, 1, true, Math.PI * 0.85, Math.PI * 1.3]}
-        />
-        <meshStandardMaterial
-          color="#e4d5ba"
-          roughness={0.95}
-          side={2 /* DoubleSide */}
         />
       </mesh>
       <mesh position={[0, 0.18, 0]}>
@@ -685,10 +707,27 @@ export function Room({ blendRef }: { blendRef: MutableRefObject<number> }) {
   const lampLightRef = useRef<PointLight>(null!);
   const orbLightRef = useRef<PointLight>(null!);
   const orbRef = useRef<Mesh>(null!);
+  const rootRef = useRef<Group>(null);
 
   const portrait = useTexture("/images/portrait.jpeg", (t) => {
     t.colorSpace = SRGBColorSpace;
   });
+
+  // Enable shadow casting/receiving on every mesh except those under a
+  // `noShadow` ancestor (skyline, sky, curtains, string bulbs).
+  useEffect(() => {
+    rootRef.current?.traverse((obj) => {
+      if (!(obj as Mesh).isMesh) return;
+      let p: typeof obj.parent | typeof obj = obj;
+      while (p) {
+        if (p.userData.noShadow) return;
+        p = p.parent;
+      }
+      const mesh = obj as Mesh;
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+    });
+  }, []);
 
   useFrame(({ clock, scene }) => {
     const t = blendRef.current;
@@ -722,12 +761,29 @@ export function Room({ blendRef }: { blendRef: MutableRefObject<number> }) {
     orbLightRef.current.intensity = lerp(0.15, 1.3, t) * pulse;
   });
 
+  const M = sharedMaterials();
+
+  // Waved curtain profile (recomputed once); soft folds catch the light.
+  const curtainGeo = useMemo(() => {
+    const g = new PlaneGeometry(0.42, 2.1, 32, 1);
+    const pos = g.attributes.position;
+    for (let i = 0; i < pos.count; i++) {
+      const x = pos.getX(i);
+      pos.setZ(i, Math.sin((x + 0.21) * 24) * 0.035);
+    }
+    g.computeVertexNormals();
+    return g;
+  }, []);
+
   return (
-    <group>
+    <group ref={rootRef}>
       {/* shell */}
-      <mesh position={[0, 0, 1]} rotation={[-Math.PI / 2, 0, 0]}>
+      <mesh
+        position={[0, 0, 1]}
+        rotation={[-Math.PI / 2, 0, 0]}
+        material={M.floor}
+      >
         <planeGeometry args={[14, 14]} />
-        <meshStandardMaterial color="#d3ac74" roughness={0.85} />
       </mesh>
       <mesh position={[0.8, 0.004, 0.45]} rotation={[-Math.PI / 2, 0, 0]}>
         <circleGeometry args={[1.1, 40]} />
@@ -735,58 +791,56 @@ export function Room({ blendRef }: { blendRef: MutableRefObject<number> }) {
       </mesh>
       {/* back wall built from four strips so the window is a real opening
           with the skyline visible through it (window centered at x=-0.1) */}
-      <mesh position={[-2.83, 2.8, -1.8]}>
+      <mesh position={[-2.83, 2.8, -1.8]} material={M.wallBack}>
         <planeGeometry args={[3.74, 5.8]} />
-        <meshStandardMaterial color="#f3ead9" roughness={0.95} />
       </mesh>
-      <mesh position={[2.53, 2.8, -1.8]}>
+      <mesh position={[2.53, 2.8, -1.8]} material={M.wallBack}>
         <planeGeometry args={[3.54, 5.8]} />
-        <meshStandardMaterial color="#f3ead9" roughness={0.95} />
       </mesh>
-      <mesh position={[-0.1, 0.415, -1.8]}>
+      <mesh position={[-0.1, 0.415, -1.8]} material={M.wallBack}>
         <planeGeometry args={[1.72, 1.03]} />
-        <meshStandardMaterial color="#f3ead9" roughness={0.95} />
       </mesh>
-      <mesh position={[-0.1, 4.235, -1.8]}>
+      <mesh position={[-0.1, 4.235, -1.8]} material={M.wallBack}>
         <planeGeometry args={[1.72, 2.93]} />
-        <meshStandardMaterial color="#f3ead9" roughness={0.95} />
       </mesh>
-      <mesh position={[2.53, 2.8, 1.2]} rotation={[0, -Math.PI / 2, 0]}>
+      <mesh
+        position={[2.53, 2.8, 1.2]}
+        rotation={[0, -Math.PI / 2, 0]}
+        material={M.wallSide}
+      >
         <planeGeometry args={[7, 5.8]} />
-        <meshStandardMaterial color="#efe4d0" roughness={0.95} />
       </mesh>
 
-      {/* window, skyline outside, and far sky backdrop */}
+      {/* window, skyline outside, and far sky backdrop — the outside world
+          neither casts nor receives room shadows */}
       <Window />
-      <Skyline
-        building={mats.building}
-        buildingAlt={mats.buildingAlt}
-        cityWindow={mats.cityWindow}
-        celestial={mats.celestial}
-      />
-      <mesh position={[-0.6, 2.1, -4.5]}>
-        <planeGeometry args={[12, 6]} />
-        <primitive object={mats.sky} attach="material" />
-      </mesh>
-      {/* sheer curtains */}
-      <mesh position={[-1.05, 1.75, -1.72]} rotation={[0, 0.08, 0]}>
-        <planeGeometry args={[0.42, 2.1]} />
-        <meshStandardMaterial
-          color="#fffdf8"
-          roughness={1}
-          transparent
-          opacity={0.55}
+      <group userData={{ noShadow: true }}>
+        <Skyline
+          building={mats.building}
+          buildingAlt={mats.buildingAlt}
+          cityWindow={mats.cityWindow}
+          celestial={mats.celestial}
         />
-      </mesh>
-      <mesh position={[0.83, 1.75, -1.72]} rotation={[0, -0.08, 0]}>
-        <planeGeometry args={[0.42, 2.1]} />
-        <meshStandardMaterial
-          color="#fffdf8"
-          roughness={1}
-          transparent
-          opacity={0.55}
+        <mesh position={[-0.6, 2.1, -4.5]}>
+          <planeGeometry args={[12, 6]} />
+          <primitive object={mats.sky} attach="material" />
+        </mesh>
+      </group>
+      {/* sheer curtains — excluded from shadows so sunlight passes through */}
+      <group userData={{ noShadow: true }}>
+        <mesh
+          geometry={curtainGeo}
+          position={[-1.05, 1.75, -1.72]}
+          rotation={[0, 0.08, 0]}
+          material={M.curtain}
         />
-      </mesh>
+        <mesh
+          geometry={curtainGeo}
+          position={[0.83, 1.75, -1.72]}
+          rotation={[0, -0.08, 0]}
+          material={M.curtain}
+        />
+      </group>
 
       <WallFrames />
       <Desk />

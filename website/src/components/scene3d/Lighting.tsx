@@ -64,13 +64,32 @@ export function Lighting({ blendRef }: { blendRef: MutableRefObject<number> }) {
       t
     );
     ambientRef.current.color.copy(DAY.ambient).lerp(NIGHT.ambient, t);
+
+    // Environment (light-former reflections) fades with the daylight
+    scene.environmentIntensity = lerp(0.55, 0.18, t);
   });
 
   return (
     <>
       <hemisphereLight ref={hemiRef} />
-      {/* Sun angled in through the window (now near back-wall center) */}
-      <directionalLight ref={sunRef} position={[-2.4, 4.2, 1.6]} />
+      {/* Sun angled in through the window (now near back-wall center); the
+          single shadow-casting light in the scene */}
+      <directionalLight
+        ref={sunRef}
+        position={[-2.4, 4.2, 1.6]}
+        castShadow
+        shadow-mapSize={[2048, 2048]}
+        shadow-bias={-0.0001}
+        shadow-normalBias={0.03}
+        shadow-radius={5}
+        shadow-blurSamples={12}
+        shadow-camera-left={-5}
+        shadow-camera-right={5}
+        shadow-camera-top={4.5}
+        shadow-camera-bottom={-1.5}
+        shadow-camera-near={0.5}
+        shadow-camera-far={14}
+      />
       <ambientLight ref={ambientRef} />
     </>
   );
